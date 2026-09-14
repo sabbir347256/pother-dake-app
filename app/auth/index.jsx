@@ -16,6 +16,8 @@ import { ArrowLeft, Mail, Lock, Phone, User, ShieldCheck, ChevronDown, Upload } 
 import * as SecureStore from 'expo-secure-store';
 import Toast from 'react-native-toast-message';
 import { useNavigation, useRouter } from "expo-router";
+import { useAuth } from "../../src/AuthProvider/AuthProvider";
+import config from "../../src/Utils/envConfig";
 
 export default function AuthScreen({ navigation }) {
   const [screenState, setScreenState] = useState("GET_STARTED");
@@ -40,6 +42,7 @@ export default function AuthScreen({ navigation }) {
       password: "",
     },
   });
+
 
   const {
     control: signupControl,
@@ -85,6 +88,8 @@ export default function AuthScreen({ navigation }) {
     }
   };
 
+  const { login } = useAuth();
+
   const onLogin = async (data) => {
     const loginData = {
       email: data?.contactNo,
@@ -94,7 +99,7 @@ export default function AuthScreen({ navigation }) {
     setIsLoginLoading(true);
 
     try {
-      const response = await fetch("http://72.61.225.177:5001/api/v1/auth/login", {
+      const response = await fetch("http://localhost:5000/api/v1/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +113,7 @@ export default function AuthScreen({ navigation }) {
         const accessToken = resData?.data?.accessToken;
 
         if (accessToken) {
-          await setStorageItem('accessToken', accessToken);
+          await login(accessToken);
         }
 
         Toast.show({
@@ -117,10 +122,12 @@ export default function AuthScreen({ navigation }) {
           text2: resData?.message || 'Login Successful!',
         });
 
+        // 1 second delay update for Toast display
         setTimeout(() => {
           setIsLoginLoading(false);
-          router.replace('/')
+          router.replace('/');
         }, 1000);
+
       } else {
         setIsLoginLoading(false);
         Toast.show({
@@ -139,10 +146,11 @@ export default function AuthScreen({ navigation }) {
     }
   };
 
+
   const onRegister = async (data) => {
     setIsRegisterLoading(true);
     try {
-      const response = await fetch("http://72.61.225.177:5001/api/v1/user/register", {
+      const response = await fetch("http://localhost:5000/api/v1/user/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -266,7 +274,7 @@ export default function AuthScreen({ navigation }) {
       if (frontFile) formData.append("nidFront", frontFile);
       if (backFile) formData.append("nidBack", backFile);
 
-      const response = await fetch("http://72.61.225.177:5001/api/v1/user/complete-registration", {
+      const response = await fetch("http://localhost:5000/api/v1/user/complete-registration", {
         method: "POST",
         headers: {
           "Accept": "application/json",

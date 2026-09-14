@@ -1,8 +1,8 @@
 import React from "react";
 import { View, ActivityIndicator, ScrollView } from "react-native";
 import { Redirect } from "expo-router";
-import { useAuth } from "../src/AuthProvider/AuthProvider";
-import HomePage from "../src/components/HomeSection/HomePage/HomePage";
+import { useAuth } from "../../src/AuthProvider/AuthProvider";
+import HomePage from "../../src/components/HomeSection/HomePage/HomePage";
 
 export default function Home() {
   const { isLoggedIn, user, loading } = useAuth();

@@ -6,9 +6,12 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
+  ActivityIndicator,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
+import axios from "axios";
 import {
   ArrowLeft,
   MapPin,
@@ -24,10 +27,15 @@ import {
   Cigarette,
   CheckCircle,
 } from "lucide-react-native";
+import config from "../../../src/Utils/envConfig";
+import { useAuth } from "../../../src/AuthProvider/AuthProvider";
 
 export default function CreateTripScreen() {
+  const {user,token} = useAuth();
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+
 
   const {
     control,
@@ -47,7 +55,7 @@ export default function CreateTripScreen() {
       vehicleType: "Bike",
       vehicleModel: "",
       vehiclePlateNumber: "",
-      availableSeats: "1 seat",
+      availableSeats: "1",
       pricePerSeat: "",
       helmetAvailable: false,
       luggageAllowed: false,
@@ -55,6 +63,7 @@ export default function CreateTripScreen() {
       acAvailable: false,
       smokingAllowed: false,
       bookingType: "Instant Booking",
+      description: "",
     },
   });
 
@@ -90,8 +99,94 @@ export default function CreateTripScreen() {
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const onSubmit = (data) => {
-    console.log("Trip Data Published:", JSON.stringify(data, null, 2));
+  const onSubmit = async (formData) => {
+    setLoading(true);
+
+    const formattedStopPoints = formData.stopPoints
+      ? formData.stopPoints.split(",").map((item) => item.trim()).filter(Boolean)
+      : [];
+
+    const bookingTypeMapped =
+      formData.bookingType === "Instant Booking" ? "Instant" : "Manual";
+
+    const payload = {
+      driverId: "664f123456789abcdef01234",
+      startingPoint: {
+        addressName: formData.startingPoint,
+        location: {
+          type: "Point",
+          coordinates: [90.4125, 23.8103],
+        },
+      },
+      destination: {
+        addressName: formData.destination,
+        location: {
+          type: "Point",
+          coordinates: [91.8317, 22.3569],
+        },
+      },
+      stopPoints: formattedStopPoints,
+      date: formData.departureDate,
+      departureTime: formData.departureTime,
+      estimatedArrivalTime: formData.estimatedArrivalTime,
+      vehicleType: formData.vehicleType,
+      availableSeats: parseInt(formData.availableSeats, 10) || 1,
+      preferences: {
+        ac: formData.acAvailable,
+        music: formData.musicAllowed,
+        luggage: formData.luggageAllowed,
+        pets: false,
+        smoking: formData.smokingAllowed,
+        helmet: formData.helmetAvailable,
+        womenOnly: false,
+        maxLuggageWeight: 10,
+      },
+      pricePerSeat: Number(formData.pricePerSeat),
+      bookingType: bookingTypeMapped,
+      description: formData.description || "Driving safely.",
+    };
+
+    try {
+      const response = await axios.post(
+        `${config.backendUrl}/tripRoute/create`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(response)
+
+      if (response.data?.success || response.status === 200 || response.status === 201) {
+        Toast.show({
+          type: "success",
+          text1: "Success",
+          text2: response.data?.message || "Trip created successfully!",
+        });
+
+        setTimeout(() => {
+          setLoading(false);
+          router.replace("/");
+        }, 1000);
+      } else {
+        setLoading(false);
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: response.data?.message || "Failed to create trip",
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: error.response?.data?.message || "Failed to create trip. Please try again.",
+      });
+    }
   };
 
   return (
@@ -100,6 +195,7 @@ export default function CreateTripScreen() {
         <TouchableOpacity
           onPress={() => (step > 1 ? handlePrevious() : router.back())}
           className="p-1"
+          disabled={loading}
         >
           <ArrowLeft size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -188,7 +284,7 @@ export default function CreateTripScreen() {
             )}
 
             <Text className="text-slate-300 font-medium mt-3 mb-2">
-              Stop Points (Optional)
+              Stop Points (Comma Separated)
             </Text>
             <Controller
               control={control}
@@ -196,7 +292,7 @@ export default function CreateTripScreen() {
               render={({ field: { onChange, value } }) => (
                 <View className="bg-[#111827] border border-slate-800 rounded-2xl flex-row items-center px-4 py-3.5 mb-4">
                   <TextInput
-                    placeholder="Add stop points"
+                    placeholder="e.g. Comilla, Feni"
                     placeholderTextColor="#475569"
                     className="flex-1 text-white text-base"
                     value={value}
@@ -219,7 +315,7 @@ export default function CreateTripScreen() {
                     <View className="bg-[#111827] border border-slate-800 rounded-2xl flex-row items-center px-4 py-3.5">
                       <Calendar size={18} color="#64748B" />
                       <TextInput
-                        placeholder="mm/dd/yyyy"
+                        placeholder="YYYY-MM-DD"
                         placeholderTextColor="#475569"
                         className="flex-1 text-white ml-2 text-base"
                         value={value}
@@ -242,7 +338,7 @@ export default function CreateTripScreen() {
                     <View className="bg-[#111827] border border-slate-800 rounded-2xl flex-row items-center px-4 py-3.5">
                       <Clock size={18} color="#64748B" />
                       <TextInput
-                        placeholder="--:-- --"
+                        placeholder="08:00 AM"
                         placeholderTextColor="#475569"
                         className="flex-1 text-white ml-2 text-base"
                         value={value}
@@ -265,7 +361,7 @@ export default function CreateTripScreen() {
                 <View className="bg-[#111827] border border-slate-800 rounded-2xl flex-row items-center px-4 py-3.5 mb-4">
                   <Clock size={18} color="#64748B" />
                   <TextInput
-                    placeholder="--:-- --"
+                    placeholder="01:00 PM"
                     placeholderTextColor="#475569"
                     className="flex-1 text-white ml-2 text-base"
                     value={value}
@@ -377,8 +473,9 @@ export default function CreateTripScreen() {
                 <View className="bg-[#111827] border border-slate-800 rounded-2xl flex-row items-center px-4 py-3.5 mb-4">
                   <Users size={20} color="#64748B" />
                   <TextInput
+                    keyboardType="numeric"
                     className="flex-1 text-white ml-3 text-base"
-                    value={value}
+                    value={String(value)}
                     onChangeText={onChange}
                   />
                 </View>
@@ -537,6 +634,7 @@ export default function CreateTripScreen() {
         {step > 1 && (
           <TouchableOpacity
             onPress={handlePrevious}
+            disabled={loading}
             style={{ flex: 1, marginRight: 12 }}
             className="bg-[#111827] border border-slate-800 py-4 rounded-2xl items-center justify-center"
           >
@@ -555,10 +653,15 @@ export default function CreateTripScreen() {
         ) : (
           <TouchableOpacity
             onPress={handleSubmit(onSubmit)}
+            disabled={loading}
             style={{ flex: 1 }}
-            className="bg-[#10B981] py-4 rounded-2xl items-center justify-center"
+            className="bg-[#10B981] py-4 rounded-2xl items-center justify-center flex-row"
           >
-            <Text className="text-white font-bold text-base">Publish Trip</Text>
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text className="text-white font-bold text-base">Publish Trip</Text>
+            )}
           </TouchableOpacity>
         )}
       </View>

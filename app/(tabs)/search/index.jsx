@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, Octicons, FontAwesome5 } from "@expo/vector-icons";
-import SearchForm from "../../src/components/HomeSection/SearchForm/SearchForm";
+import SearchForm from "../../../src/components/HomeSection/SearchForm/SearchForm";
 
 const mockRides = [
     {
