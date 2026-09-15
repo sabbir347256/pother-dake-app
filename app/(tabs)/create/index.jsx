@@ -286,6 +286,7 @@ export default function CreateTripScreen() {
 
   return (
     <View className="flex-1 bg-[#050B14] pt-12 relative">
+      <Toast></Toast>
       <View className="px-5 py-3 flex-row items-center justify-between">
         <TouchableOpacity
           onPress={() => (step > 1 ? handlePrevious() : router.back())}
