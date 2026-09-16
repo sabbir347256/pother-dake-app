@@ -61,7 +61,7 @@ const HomePage = () => {
     }));
     return (
         <ScrollView className="flex-1 bg-[#090D16]">
-            <View className="pt-14 px-5 pb-6 bg-[#0F172A] rounded-b-[36px] border-b border-slate-800/80">
+            <View className="pt-8 px-5 pb-6 bg-[#0F172A] rounded-b-[36px] border-b border-slate-800/80">
                 <View className="flex-row justify-between items-center mb-6">
                     <View>
                         <Text className="text-slate-400 text-xs font-semibold tracking-widest uppercase">

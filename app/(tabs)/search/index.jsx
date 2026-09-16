@@ -174,7 +174,7 @@ export default function SearchScreen() {
 
     return (
         <ScrollView className="flex-1 bg-[#090D16]">
-            <View className="bg-[#00B16A] pt-14 pb-16 px-6 rounded-b-[32px]">
+            <View className="bg-[#00B16A] pt-8 pb-16 px-6 rounded-b-[32px]">
                 <Text className="text-white text-3xl font-extrabold">Pother Dake</Text>
                 <Text className="text-emerald-100 text-sm mt-1">Find your perfect ride companion</Text>
             </View>
