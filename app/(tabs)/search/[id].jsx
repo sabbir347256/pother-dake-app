@@ -6,7 +6,6 @@ import {
     ScrollView,
     Image,
     ActivityIndicator,
-    Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -14,29 +13,33 @@ import {
     Octicons,
     FontAwesome5,
     MaterialIcons,
-    Feather,
 } from "@expo/vector-icons";
+import axios from "axios";
+import Toast from "react-native-toast-message";
 import config from "../../../src/Utils/envConfig";
 import { useAuth } from "../../../src/AuthProvider/AuthProvider";
 
 export default function RideDetailsScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
-    const { token } = useAuth();
+    const { token, user } = useAuth();
 
     const [trip, setTrip] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [bookingLoading, setBookingLoading] = useState(false);
 
     const fetchTripDetails = async () => {
         try {
-            const response = await fetch(`${config?.backendUrl}/tripRoute/getDetailsTrip/${id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-            });
-            const result = await response.json();
+            const response = await axios.get(
+                `${config?.backendUrl}/tripRoute/getDetailsTrip/${id}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            const result = response.data;
             if (result?.data) {
                 setTrip(result.data);
             } else if (result?.result) {
@@ -46,6 +49,11 @@ export default function RideDetailsScreen() {
             }
         } catch (error) {
             console.error("Error fetching trip details:", error);
+            Toast.show({
+                type: "error",
+                text1: "Error",
+                text2: "Failed to fetch trip details.",
+            });
         } finally {
             setLoading(false);
         }
@@ -57,18 +65,51 @@ export default function RideDetailsScreen() {
         }
     }, [id]);
 
-    const handleBookRide = () => {
-        Alert.alert("Book Ride", "Do you want to request this booking?", [
-            { text: "Cancel", style: "cancel" },
-            { text: "Confirm", onPress: () => console.log("Booking ride:", id) },
-        ]);
+    const confirmBooking = async () => {
+        try {
+            setBookingLoading(true);
+            const passengerId = user?._id || user?.id || user?.userId;
+            const payload = {
+                tripId: id,
+                passengerId: passengerId,
+                seatsBooked: 1,
+            };
+
+            const response = await axios.post(
+                `${config?.backendUrl}/tripBookedRoute/tripBooked`,
+                payload,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.data) {
+                Toast.show({
+                    type: "success",
+                    text1: "Success",
+                    text2: "Trip booked successfully!",
+                });
+                await fetchTripDetails();
+            }
+        } catch (error) {
+            console.error("Error booking trip:", error?.response?.data || error?.message || error);
+            Toast.show({
+                type: "error",
+                text1: "Booking Failed",
+                text2: error?.response?.data?.message || "Failed to book the ride.",
+            });
+        } finally {
+            setBookingLoading(false);
+        }
     };
 
     const handleChatWithDriver = () => {
-        if (trip?.driverId?._id) {
-            router.push(`/chat/${trip.driverId._id}`);
-        } else {
-            router.push(`/chat/${trip?.driverId}`);
+        const driverId = trip?.driverId?._id || trip?.driverId;
+        if (driverId) {
+            router.push(`/chat/${driverId}`);
         }
     };
 
@@ -98,6 +139,7 @@ export default function RideDetailsScreen() {
 
     return (
         <ScrollView className="flex-1 bg-[#090D16]">
+            <Toast></Toast>
             <View className="pt-8 px-5 flex-row items-center justify-between mb-6">
                 <TouchableOpacity
                     onPress={() => router.back()}
@@ -125,11 +167,18 @@ export default function RideDetailsScreen() {
 
                 <TouchableOpacity
                     activeOpacity={0.8}
-                    onPress={handleBookRide}
+                    onPress={confirmBooking}
+                    disabled={bookingLoading}
                     className="flex-1 bg-[#00B16A] py-3.5 rounded-2xl flex-row justify-center items-center"
                 >
-                    <FontAwesome5 name="car" size={16} color="#FFFFFF" />
-                    <Text className="text-white font-bold text-base ml-2">Book Ride</Text>
+                    {bookingLoading ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                        <>
+                            <FontAwesome5 name="car" size={16} color="#FFFFFF" />
+                            <Text className="text-white font-bold text-base ml-2">Book Ride</Text>
+                        </>
+                    )}
                 </TouchableOpacity>
             </View>
 
