@@ -118,7 +118,6 @@ export default function AuthScreen({ navigation }) {
 
         Toast.show({
           type: 'success',
-          text1: 'Success',
           text2: resData?.message || 'Login Successful!',
         });
 
@@ -132,7 +131,6 @@ export default function AuthScreen({ navigation }) {
         setIsLoginLoading(false);
         Toast.show({
           type: 'error',
-          text1: 'Error',
           text2: resData?.message || 'Login failed',
         });
       }
@@ -140,7 +138,6 @@ export default function AuthScreen({ navigation }) {
       setIsLoginLoading(false);
       Toast.show({
         type: 'error',
-        text1: 'Error',
         text2: 'Server connection failed',
       });
     }
@@ -166,20 +163,20 @@ export default function AuthScreen({ navigation }) {
         setShowOtpModal(true);
         Toast.show({
           type: 'success',
-          text1: 'Success',
+          
           text2: resData?.message || 'Registration Initiated!',
         });
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Error',
+          
           text2: resData?.message || 'Registration failed',
         });
       }
     } catch (error) {
       Toast.show({
         type: 'error',
-        text1: 'Error',
+        
         text2: 'Server connection failed',
       });
     } finally {
@@ -193,7 +190,7 @@ export default function AuthScreen({ navigation }) {
     if (permissionResult.granted === false) {
       Toast.show({
         type: 'info',
-        text1: 'Permission Required',
+        
         text2: 'Permission to access camera roll is required!',
       });
       return;
@@ -253,7 +250,7 @@ export default function AuthScreen({ navigation }) {
     if (!nidFrontImage || !nidBackImage) {
       Toast.show({
         type: 'error',
-        text1: 'Error',
+        
         text2: 'Please upload both NID front and back images',
       });
       return;
@@ -289,20 +286,20 @@ export default function AuthScreen({ navigation }) {
         setScreenState("LOGIN");
         Toast.show({
           type: 'success',
-          text1: 'Success',
+          
           text2: resData?.message || 'Registration Completed Successfully!',
         });
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Error',
+          
           text2: resData?.message || 'OTP verification failed',
         });
       }
     } catch (error) {
       Toast.show({
         type: 'error',
-        text1: 'Error',
+        
         text2: 'Server connection failed.',
       });
     } finally {

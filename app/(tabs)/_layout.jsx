@@ -3,8 +3,12 @@ import { Tabs } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { View, Platform } from "react-native";
 import { Octicons, Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../../src/AuthProvider/AuthProvider";
 
 const TabLayout = () => {
+    const { user } = useAuth();
+    const isDriver = user?.role === "DRIVER";
+
     return (
         <SafeAreaProvider style={{ backgroundColor: "#000000" }}>
             <Tabs
@@ -115,7 +119,8 @@ const TabLayout = () => {
                 <Tabs.Screen
                     name="create"
                     options={{
-                        title: "",
+                        title: "Create",
+                        href: isDriver ? undefined : null,
                         tabBarIcon: () => (
                             <View
                                 className="items-center justify-center w-14 h-14 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-full -mt-8 border-4 border-[#0F172A]"
@@ -134,12 +139,13 @@ const TabLayout = () => {
                 />
 
                 <Tabs.Screen
-                    name="bookings"
+                    name="chat"
                     options={{
-                        title: "Bookings",
+                        title: "Chat",
+                        href: undefined,
                         tabBarIcon: ({ focused }) => (
                             <View
-                                className={`items-center justify-center w-11 h-11 rounded-2xl relative ${focused ? "bg-emerald-950/80 border border-emerald-500/30" : "bg-transparent"
+                                className={`items-center justify-center w-11 h-11 rounded-2xl  relative ${focused ? "bg-emerald-950/80 border border-emerald-500/30" : "bg-transparent"
                                     }`}
                                 style={
                                     focused && {
@@ -156,7 +162,36 @@ const TabLayout = () => {
                                     size={20}
                                     color={focused ? "#10B981" : "#64748B"}
                                 />
-                                <View className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-[#0F172A]" />
+                                <View className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2  border-[#0F172A]" />
+                            </View>
+                        ),
+                    }}
+                />
+
+                <Tabs.Screen
+                    name="bookings"
+                    options={{
+                        title: "Bookings",
+                        href: isDriver ? null : undefined,
+                        tabBarIcon: ({ focused }) => (
+                            <View
+                                className={`items-center justify-center w-11 h-11 rounded-2xl ${focused ? "bg-emerald-950/80 border border-emerald-500/30" : "bg-transparent"
+                                    }`}
+                                style={
+                                    focused && {
+                                        elevation: 6,
+                                        shadowColor: "#10B981",
+                                        shadowOffset: { width: 0, height: 4 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 6,
+                                    }
+                                }
+                            >
+                                <Octicons
+                                    name="bookmark"
+                                    size={20}
+                                    color={focused ? "#10B981" : "#64748B"}
+                                />
                             </View>
                         ),
                     }}
@@ -191,6 +226,7 @@ const TabLayout = () => {
                         ),
                     }}
                 />
+
                 <Tabs.Screen
                     name="auth/index"
                     options={{
