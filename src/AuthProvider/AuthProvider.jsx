@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
     loadStorageData();
-  }, []);
+  }, [token,setToken]);
 
   const login = async (tokenData) => {
     try {

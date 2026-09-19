@@ -53,6 +53,7 @@ const BANGLADESH_DISTRICTS = [
 
 export default function CreateTripScreen() {
   const { user, token } = useAuth();
+  console.log(user)
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -195,6 +196,18 @@ export default function CreateTripScreen() {
   };
 
   const onSubmit = async (formData) => {
+    if (user && user?.active === 'INACTIVE') {
+      return Toast?.show({
+        type: "error",
+        text2: "Your account is inactive. Please contact support."
+      });
+    }
+    if (user && (user?.mainWalletBalance ?? 0) < 10) {
+      return Toast?.show({
+        type: "error",
+        text2: "Insufficient wallet balance. Minimum balance of ৳10 is required."
+      });
+    }
     setLoading(true);
 
     const formattedStopPoints = formData.stopPoints
@@ -302,19 +315,16 @@ export default function CreateTripScreen() {
       <View className="px-5 my-4">
         <View className="flex-row justify-between mb-2">
           <View
-            className={`h-1.5 flex-1 rounded-full mr-2 ${
-              step >= 1 ? "bg-[#10B981]" : "bg-[#1E293B]"
-            }`}
+            className={`h-1.5 flex-1 rounded-full mr-2 ${step >= 1 ? "bg-[#10B981]" : "bg-[#1E293B]"
+              }`}
           />
           <View
-            className={`h-1.5 flex-1 rounded-full mr-2 ${
-              step >= 2 ? "bg-[#10B981]" : "bg-[#1E293B]"
-            }`}
+            className={`h-1.5 flex-1 rounded-full mr-2 ${step >= 2 ? "bg-[#10B981]" : "bg-[#1E293B]"
+              }`}
           />
           <View
-            className={`h-1.5 flex-1 rounded-full ${
-              step >= 3 ? "bg-[#10B981]" : "bg-[#1E293B]"
-            }`}
+            className={`h-1.5 flex-1 rounded-full ${step >= 3 ? "bg-[#10B981]" : "bg-[#1E293B]"
+              }`}
           />
         </View>
         <Text className="text-slate-400 text-xs mt-1">Step {step} of 3</Text>
@@ -513,11 +523,10 @@ export default function CreateTripScreen() {
                     key={type}
                     onPress={() => setValue("vehicleType", type)}
                     style={{ flex: 1, marginRight: index < 2 ? 12 : 0 }}
-                    className={`py-4 rounded-2xl items-center justify-center border ${
-                      isSelected
+                    className={`py-4 rounded-2xl items-center justify-center border ${isSelected
                         ? "bg-[#10B981] border-[#10B981]"
                         : "bg-[#111827] border-slate-800"
-                    }`}
+                      }`}
                   >
                     {type === "Bike" && (
                       <Bike size={24} color={isSelected ? "#FFFFFF" : "#94A3B8"} />
@@ -529,9 +538,8 @@ export default function CreateTripScreen() {
                       <Car size={24} color={isSelected ? "#FFFFFF" : "#94A3B8"} />
                     )}
                     <Text
-                      className={`font-semibold mt-2 ${
-                        isSelected ? "text-white" : "text-slate-400"
-                      }`}
+                      className={`font-semibold mt-2 ${isSelected ? "text-white" : "text-slate-400"
+                        }`}
                     >
                       {type}
                     </Text>
@@ -723,27 +731,24 @@ export default function CreateTripScreen() {
                     key={item.title}
                     onPress={() => setValue("bookingType", item.title)}
                     style={{ flex: 1, marginRight: index === 0 ? 12 : 0 }}
-                    className={`p-4 rounded-2xl border ${
-                      isSelected
+                    className={`p-4 rounded-2xl border ${isSelected
                         ? "bg-[#10B981] border-[#10B981]"
                         : "bg-[#111827] border-slate-800"
-                    }`}
+                      }`}
                   >
                     <item.Icon
                       size={20}
                       color={isSelected ? "#FFFFFF" : "#94A3B8"}
                     />
                     <Text
-                      className={`font-bold text-base mt-2 ${
-                        isSelected ? "text-white" : "text-slate-200"
-                      }`}
+                      className={`font-bold text-base mt-2 ${isSelected ? "text-white" : "text-slate-200"
+                        }`}
                     >
                       {item.title}
                     </Text>
                     <Text
-                      className={`text-xs mt-1 ${
-                        isSelected ? "text-emerald-100" : "text-slate-400"
-                      }`}
+                      className={`text-xs mt-1 ${isSelected ? "text-emerald-100" : "text-slate-400"
+                        }`}
                     >
                       {item.sub}
                     </Text>

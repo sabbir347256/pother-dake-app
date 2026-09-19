@@ -292,7 +292,6 @@ export default function AuthScreen({ navigation }) {
       } else {
         Toast.show({
           type: 'error',
-          
           text2: resData?.message || 'OTP verification failed',
         });
       }
