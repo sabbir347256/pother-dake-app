@@ -83,6 +83,7 @@ const TabLayout = () => {
                     name="search"
                     options={{
                         title: "Search",
+                        href: isDriver ? null : undefined,
                         tabBarIcon: ({ focused }) => (
                             <View
                                 className={`items-center justify-center w-11 h-11 rounded-2xl ${focused
@@ -117,6 +118,37 @@ const TabLayout = () => {
                 />
 
                 <Tabs.Screen
+                    name="my-bookings"
+                    options={{
+                        title: "My Ride",
+                        href: isDriver ? undefined : null,
+                        tabBarIcon: ({ focused }) => (
+                            <View
+                                className={`items-center justify-center w-11 h-11 rounded-2xl ${focused
+                                    ? "bg-emerald-950/80 border border-emerald-500/30"
+                                    : "bg-transparent"
+                                    }`}
+                                style={
+                                    focused && {
+                                        elevation: 6,
+                                        shadowColor: "#10B981",
+                                        shadowOffset: { width: 0, height: 4 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 6,
+                                    }
+                                }
+                            >
+                                <Octicons
+                                    name="list-unordered"
+                                    size={20}
+                                    color={focused ? "#10B981" : "#64748B"}
+                                />
+                            </View>
+                        ),
+                    }}
+                />
+
+                <Tabs.Screen
                     name="create"
                     options={{
                         title: "Create",
@@ -145,7 +177,7 @@ const TabLayout = () => {
                         href: undefined,
                         tabBarIcon: ({ focused }) => (
                             <View
-                                className={`items-center justify-center w-11 h-11 rounded-2xl  relative ${focused ? "bg-emerald-950/80 border border-emerald-500/30" : "bg-transparent"
+                                className={`items-center justify-center w-11 h-11 rounded-2xl relative ${focused ? "bg-emerald-950/80 border border-emerald-500/30" : "bg-transparent"
                                     }`}
                                 style={
                                     focused && {
@@ -162,7 +194,7 @@ const TabLayout = () => {
                                     size={20}
                                     color={focused ? "#10B981" : "#64748B"}
                                 />
-                                <View className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2  border-[#0F172A]" />
+                                <View className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-[#0F172A]" />
                             </View>
                         ),
                     }}

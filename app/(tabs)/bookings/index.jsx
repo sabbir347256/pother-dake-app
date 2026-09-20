@@ -101,7 +101,7 @@ export default function MyBookingsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-[#090D16]">
+    <View className="flex-1 bg-[#090D16] pb-16">
       <View className="pt-12 pb-4 px-5 flex-row items-center justify-between border-b border-slate-800">
         <TouchableOpacity
           onPress={() => router.back()}
