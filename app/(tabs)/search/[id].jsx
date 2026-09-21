@@ -73,6 +73,7 @@ export default function RideDetailsScreen() {
                 tripId: id,
                 passengerId: passengerId,
                 seatsBooked: 1,
+                driverId: trip?.driverId?._id || trip?.driverId,
             };
 
             const response = await axios.post(
