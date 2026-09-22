@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import Toast from 'react-native-toast-message';
 import config from '../../../src/Utils/envConfig';
 import { useAuth } from '../../../src/AuthProvider/AuthProvider';
 
@@ -39,11 +40,21 @@ export default function DriverBookingsScreen() {
 
   const mutation = useMutation({
     mutationFn: updateStatusRequest,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['driverBookings'] });
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: data?.message || 'Booking status updated successfully'
+      });
     },
     onError: (error) => {
-      Alert.alert('Error', error?.response?.data?.message || 'Something went wrong');
+      const errorMessage = error?.response?.data?.message || 'Something went wrong';
+      Toast.show({
+        type: 'error',
+        text1: 'Notice',
+        text2: errorMessage
+      });
     }
   });
 
@@ -144,6 +155,7 @@ export default function DriverBookingsScreen() {
             </TouchableOpacity>
           </View>
         )}
+        <Toast></Toast>
       </View>
     );
   };
@@ -153,7 +165,7 @@ export default function DriverBookingsScreen() {
       <View className="px-5 pb-4 mb-2 border-b border-zinc-800/80 flex-row items-center justify-between">
         <View>
           <Text className="text-2xl font-extrabold text-zinc-100 tracking-tight">
-            Ride Requests
+            Booking Ride
           </Text>
           <Text className="text-xs text-zinc-400 font-medium mt-0.5">
             Manage passenger booking requests
@@ -177,6 +189,7 @@ export default function DriverBookingsScreen() {
           </View>
         }
       />
+      <Toast></Toast>
     </View>
   );
 }
