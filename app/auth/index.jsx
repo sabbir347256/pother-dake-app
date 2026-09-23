@@ -99,7 +99,7 @@ export default function AuthScreen({ navigation }) {
     setIsLoginLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/v1/auth/login", {
+      const response = await fetch(`${config.backendUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -147,7 +147,7 @@ export default function AuthScreen({ navigation }) {
   const onRegister = async (data) => {
     setIsRegisterLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/v1/user/register", {
+      const response = await fetch(`${config.backendUrl}/user/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -271,7 +271,7 @@ export default function AuthScreen({ navigation }) {
       if (frontFile) formData.append("nidFront", frontFile);
       if (backFile) formData.append("nidBack", backFile);
 
-      const response = await fetch("http://localhost:5000/api/v1/user/complete-registration", {
+      const response = await fetch(`${config.backendUrl}/user/complete-registration`, {
         method: "POST",
         headers: {
           "Accept": "application/json",

@@ -259,13 +259,13 @@ const TabLayout = () => {
                     }}
                 />
 
-                <Tabs.Screen
+                {/* <Tabs.Screen
                     name="auth/index"
                     options={{
                         href: null,
                         tabBarStyle: { display: "none" },
                     }}
-                />
+                /> */}
             </Tabs>
         </SafeAreaProvider>
     );

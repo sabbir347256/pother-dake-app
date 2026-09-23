@@ -20,6 +20,7 @@ import Toast from "react-native-toast-message";
 
 export default function ProfileScreen() {
     const { token, logout } = useAuth();
+    console.log(token)
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -57,7 +58,7 @@ export default function ProfileScreen() {
 
     useEffect(() => {
         fetchUserProfile();
-    }, []);
+    }, [token]);
 
     const onRefresh = () => {
         setRefreshing(true);
