@@ -35,6 +35,7 @@ const BANGLADESH_DISTRICTS = [
 const DISTRICT_COORDINATES = {
     "Dhaka": { lat: 23.8103, lng: 90.4125 },
     "Chittagong": { lat: 22.3569, lng: 91.8317 },
+    "Chattogram": { lat: 22.3569, lng: 91.8317 },
     "Bagerhat": { lat: 22.6515, lng: 89.7859 },
     "Bandarban": { lat: 21.8311, lng: 92.3686 },
     "Barguna": { lat: 22.1570, lng: 90.1251 },
@@ -83,18 +84,28 @@ export default function SearchScreen() {
             queryParams.append("limit", "10");
 
             if (searchParams) {
-                if (searchParams.from && DISTRICT_COORDINATES[searchParams.from]) {
-                    const fromCoords = DISTRICT_COORDINATES[searchParams.from];
-                    queryParams.append("fromLat", fromCoords.lat.toString());
-                    queryParams.append("fromLng", fromCoords.lng.toString());
+                if (searchParams.from) {
+                    queryParams.append("fromAddress", searchParams.from);
+                    if (DISTRICT_COORDINATES[searchParams.from]) {
+                        const fromCoords = DISTRICT_COORDINATES[searchParams.from];
+                        queryParams.append("fromLat", fromCoords.lat.toString());
+                        queryParams.append("fromLng", fromCoords.lng.toString());
+                    }
                 }
-                if (searchParams.to && DISTRICT_COORDINATES[searchParams.to]) {
-                    const toCoords = DISTRICT_COORDINATES[searchParams.to];
-                    queryParams.append("toLat", toCoords.lat.toString());
-                    queryParams.append("toLng", toCoords.lng.toString());
+                if (searchParams.to) {
+                    queryParams.append("toAddress", searchParams.to);
+                    if (DISTRICT_COORDINATES[searchParams.to]) {
+                        const toCoords = DISTRICT_COORDINATES[searchParams.to];
+                        queryParams.append("toLat", toCoords.lat.toString());
+                        queryParams.append("toLng", toCoords.lng.toString());
+                    }
                 }
                 if (searchParams.date instanceof Date) {
-                    queryParams.append("date", searchParams.date.toISOString().split("T")[0]);
+                    // Local date format standard ISO String YYYY-MM-DD
+                    const year = searchParams.date.getFullYear();
+                    const month = String(searchParams.date.getMonth() + 1).padStart(2, '0');
+                    const day = String(searchParams.date.getDate()).padStart(2, '0');
+                    queryParams.append("date", `${year}-${month}-${day}`);
                 }
                 if (searchParams.vehicleType) {
                     queryParams.append("vehicleType", searchParams.vehicleType);
@@ -118,8 +129,8 @@ export default function SearchScreen() {
                 const fetchedDocs = result.data.docs || result.data || [];
                 setTrips(Array.isArray(fetchedDocs) ? fetchedDocs : []);
                 setPagination({
-                    page: result.data.page || pageNum,
-                    totalPages: result.data.totalPages || 1,
+                    page: result.meta?.page || result.data.page || pageNum,
+                    totalPages: result.meta?.totalPage || result.data.totalPages || 1,
                     limit: 10,
                 });
             } else {
@@ -172,6 +183,14 @@ export default function SearchScreen() {
         setDistrictModal({ visible: true, targetField });
     };
 
+    const formatDateDisplay = (dateObj) => {
+        if (!dateObj) return "Select Date";
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     return (
         <ScrollView className="flex-1 bg-[#090D16]">
             <View className="bg-[#00B16A] pt-8 pb-16 px-6 rounded-b-[32px]">
@@ -205,7 +224,7 @@ export default function SearchScreen() {
                         <Feather name="chevron-down" size={18} color="#64748B" />
                     </TouchableOpacity>
 
-                    <View className="flex-row justify-between mb-5">
+                    {/* <View className="flex-row justify-between mb-5">
                         <View className="w-[48%]">
                             <Text className="text-slate-400 font-semibold mb-2">Date</Text>
                             <Controller
@@ -220,14 +239,14 @@ export default function SearchScreen() {
                                         >
                                             <Octicons name="calendar" size={16} color="#64748B" />
                                             <Text className="ml-2 text-xs text-white">
-                                                {value ? value.toISOString().split("T")[0] : "Select Date"}
+                                                {formatDateDisplay(value)}
                                             </Text>
                                         </TouchableOpacity>
                                         {showDatePicker && (
                                             <DateTimePicker
                                                 value={value || new Date()}
                                                 mode="date"
-                                                display="default"
+                                                display={Platform.OS === "ios" ? "spinner" : "default"}
                                                 onChange={(event, selectedDate) => {
                                                     setShowDatePicker(Platform.OS === "ios");
                                                     if (event.type === "set" && selectedDate) {
@@ -263,7 +282,7 @@ export default function SearchScreen() {
                                             <DateTimePicker
                                                 value={value || new Date()}
                                                 mode="time"
-                                                display="default"
+                                                display={Platform.OS === "ios" ? "spinner" : "default"}
                                                 onChange={(event, selectedTime) => {
                                                     setShowTimePicker(Platform.OS === "ios");
                                                     if (event.type === "set" && selectedTime) {
@@ -276,7 +295,7 @@ export default function SearchScreen() {
                                 )}
                             />
                         </View>
-                    </View>
+                    </View> */}
 
                     <View className="flex-row justify-between items-center">
                         <TouchableOpacity
@@ -409,7 +428,7 @@ export default function SearchScreen() {
                                 </View>
 
                                 <View className="items-end">
-                                    <Text className="text-emerald-400 text-xl font-extrabold">৳ {ride.pricePerSeat}</Text>
+                                    <Text className="text-emerald-400 text-xl font-extrabold">৳ {ride.pricePerSeat || ride.preferences?.pricePerSeat || 0}</Text>
                                     <Text className="text-slate-400 text-xs">per seat</Text>
                                 </View>
                             </View>
@@ -417,7 +436,7 @@ export default function SearchScreen() {
                             <View className="flex-row justify-between items-center bg-[#1E293B]/60 rounded-xl px-3 py-2.5">
                                 <View className="flex-row items-center">
                                     <Octicons name="calendar" size={14} color="#94A3B8" />
-                                    <Text className="text-slate-300 text-xs ml-2">{ride.date || "Flexible Date"}</Text>
+                                    <Text className="text-slate-300 text-xs ml-2">{ride.date ? String(ride.date) : "Flexible Date"}</Text>
                                 </View>
                                 <View className="flex-row items-center">
                                     <FontAwesome5 name="chair" size={12} color="#10B981" />
