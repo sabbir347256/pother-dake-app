@@ -85,7 +85,7 @@ export default function DriverBookingsScreen() {
     const trip = item.tripId || {};
 
     return (
-      <View className="bg-zinc-900 border border-zinc-800 m-3 p-5 rounded-2xl shadow-xl">
+      <View className="bg-zinc-900 border border-zinc-800 m-3 p-5 rounded-2xl shadow-xl pb-20">
         <View className="flex-row items-center mb-4">
           <Image
             source={{
@@ -94,7 +94,7 @@ export default function DriverBookingsScreen() {
             className="w-14 h-14 rounded-full border-2 border-indigo-500 mr-3"
           />
           <View className="flex-1">
-            <Text className="text-lg font-bold text-zinc-100">{passenger.name || 'Passenger Name'}</Text>
+            <Text className="text-lg font-bold text-zinc-100">{passenger.fullName || 'Passenger Name'}</Text>
             <Text className="text-xs text-zinc-400">{passenger.email || 'passenger@example.com'}</Text>
             <Text className="text-xs text-zinc-500 mt-0.5">{passenger.phone || 'N/A'}</Text>
           </View>
