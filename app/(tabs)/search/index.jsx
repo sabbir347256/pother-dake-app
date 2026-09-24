@@ -230,7 +230,9 @@ export default function SearchScreen() {
                                                 display="default"
                                                 onChange={(event, selectedDate) => {
                                                     setShowDatePicker(Platform.OS === "ios");
-                                                    if (selectedDate) onChange(selectedDate);
+                                                    if (event.type === "set" && selectedDate) {
+                                                        onChange(selectedDate);
+                                                    }
                                                 }}
                                                 minimumDate={new Date()}
                                             />
@@ -264,7 +266,9 @@ export default function SearchScreen() {
                                                 display="default"
                                                 onChange={(event, selectedTime) => {
                                                     setShowTimePicker(Platform.OS === "ios");
-                                                    if (selectedTime) onChange(selectedTime);
+                                                    if (event.type === "set" && selectedTime) {
+                                                        onChange(selectedTime);
+                                                    }
                                                 }}
                                             />
                                         )}
@@ -297,7 +301,6 @@ export default function SearchScreen() {
                 </View>
             </View>
 
-            {/* District Selection Modal with Search Input */}
             <Modal visible={districtModal.visible} transparent animationType="slide">
                 <View className="flex-1 bg-black/70 justify-end">
                     <View className="bg-[#111827] h-[75%] rounded-t-3xl p-5 border-t border-slate-800">
@@ -310,7 +313,6 @@ export default function SearchScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Search Input Field */}
                         <View className="flex-row items-center bg-[#1E293B] border border-slate-700 rounded-2xl px-3 py-2.5 mb-4">
                             <Octicons name="search" size={18} color="#64748B" />
                             <TextInput
@@ -328,7 +330,6 @@ export default function SearchScreen() {
                             )}
                         </View>
 
-                        {/* District List */}
                         <FlatList
                             data={filteredDistricts}
                             keyExtractor={(item) => item}

@@ -72,7 +72,7 @@ export default function RideDetailsScreen() {
             const payload = {
                 tripId: id,
                 passengerId: passengerId,
-                seatsBooked: 1,
+                seatsBooked: trip.availableSeats,
                 driverId: trip?.driverId?._id || trip?.driverId,
             };
 

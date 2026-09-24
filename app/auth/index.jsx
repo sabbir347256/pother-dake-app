@@ -18,6 +18,7 @@ import Toast from 'react-native-toast-message';
 import { useNavigation, useRouter } from "expo-router";
 import { useAuth } from "../../src/AuthProvider/AuthProvider";
 import config from "../../src/Utils/envConfig";
+import axios from "axios";
 
 export default function AuthScreen({ navigation }) {
   const [screenState, setScreenState] = useState("GET_STARTED");
@@ -42,7 +43,6 @@ export default function AuthScreen({ navigation }) {
       password: "",
     },
   });
-
 
   const {
     control: signupControl,
@@ -80,14 +80,6 @@ export default function AuthScreen({ navigation }) {
 
   const selectedGender = watchOtp("gender");
 
-  const setStorageItem = async (key, value) => {
-    if (Platform.OS === 'web') {
-      localStorage.setItem(key, value);
-    } else {
-      await SecureStore.setItemAsync(key, value);
-    }
-  };
-
   const { login } = useAuth();
 
   const onLogin = async (data) => {
@@ -121,7 +113,6 @@ export default function AuthScreen({ navigation }) {
           text2: resData?.message || 'Login Successful!',
         });
 
-        // 1 second delay update for Toast display
         setTimeout(() => {
           setIsLoginLoading(false);
           router.replace('/');
@@ -143,7 +134,6 @@ export default function AuthScreen({ navigation }) {
     }
   };
 
-
   const onRegister = async (data) => {
     setIsRegisterLoading(true);
     try {
@@ -163,20 +153,17 @@ export default function AuthScreen({ navigation }) {
         setShowOtpModal(true);
         Toast.show({
           type: 'success',
-          
           text2: resData?.message || 'Registration Initiated!',
         });
       } else {
         Toast.show({
           type: 'error',
-          
           text2: resData?.message || 'Registration failed',
         });
       }
     } catch (error) {
       Toast.show({
         type: 'error',
-        
         text2: 'Server connection failed',
       });
     } finally {
@@ -190,14 +177,13 @@ export default function AuthScreen({ navigation }) {
     if (permissionResult.granted === false) {
       Toast.show({
         type: 'info',
-        
         text2: 'Permission to access camera roll is required!',
       });
       return;
     }
 
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 0.8,
     });
@@ -212,99 +198,81 @@ export default function AuthScreen({ navigation }) {
     }
   };
 
-  const createFormDataFile = async (asset, fallbackName) => {
+  const createFormDataFile = (asset, fallbackName) => {
     if (!asset || !asset.uri) return null;
 
     const uri = asset.uri;
-    const filename = uri.split("/").pop() || `${fallbackName}.jpg`;
+    const filename = uri.split('/').pop() || `${fallbackName}.jpg`;
+
     const match = /\.(\w+)$/.exec(filename);
-    const ext = match ? match[1].toLowerCase() : "jpg";
-
-    let mimeType = "image/jpeg";
-    if (ext === "png") mimeType = "image/png";
-    else if (ext === "webp") mimeType = "image/webp";
-
-    if (Platform.OS === "web") {
-      try {
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        return new File([blob], filename, { type: blob.type || mimeType });
-      } catch (error) {
-        return null;
-      }
-    }
-
-    let formattedUri = uri;
-    if (Platform.OS === "android" && !uri.startsWith("file://") && !uri.startsWith("content://")) {
-      formattedUri = `file://${uri}`;
-    }
+    const ext = match ? match[1].toLowerCase() : 'jpg';
+    const mimeType = asset.mimeType || asset.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`;
 
     return {
-      uri: formattedUri,
+      uri: Platform.OS === 'android' ? uri : uri.replace('file://', ''),
       name: filename,
       type: mimeType,
     };
   };
 
-  const onCompleteRegistration = async (data) => {
-    if (!nidFrontImage || !nidBackImage) {
-      Toast.show({
-        type: 'error',
-        
-        text2: 'Please upload both NID front and back images',
-      });
-      return;
-    }
 
-    setIsCompleteLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("email", String(data.email || ""));
-      formData.append("otpCode", String(data.otpCode || ""));
-      formData.append("gender", String(data.gender || ""));
-      formData.append("nidNo", String(data.nidNo || ""));
-      formData.append("profession", String(data.profession || ""));
+const onCompleteRegistration = async (data) => {
+  if (!nidFrontImage || !nidBackImage) {
+    Toast.show({ type: 'error', text2: 'Please upload both NID images' });
+    return;
+  }
 
-      const frontFile = await createFormDataFile(nidFrontImage, "nid_front");
-      const backFile = await createFormDataFile(nidBackImage, "nid_back");
+  setIsCompleteLoading(true);
 
-      if (frontFile) formData.append("nidFront", frontFile);
-      if (backFile) formData.append("nidBack", backFile);
+  try {
+    const formData = new FormData();
+    formData.append("email", String(data.email || ""));
+    formData.append("otpCode", String(data.otpCode || ""));
+    formData.append("gender", String(data.gender || ""));
+    formData.append("nidNo", String(data.nidNo || ""));
+    formData.append("profession", String(data.profession || ""));
 
-      const response = await fetch(`${config.backendUrl}/user/complete-registration`, {
-        method: "POST",
+    formData.append("nidFront", {
+      uri: nidFrontImage.uri,
+      name: nidFrontImage.uri.split('/').pop() || 'nid_front.jpg',
+      type: nidFrontImage.mimeType || 'image/jpeg',
+    });
+
+    formData.append("nidBack", {
+      uri: nidBackImage.uri,
+      name: nidBackImage.uri.split('/').pop() || 'nid_back.jpg',
+      type: nidBackImage.mimeType || 'image/jpeg',
+    });
+
+    const response = await axios.post(
+      `${config.backendUrl}/user/complete-registration`,
+      formData,
+      {
         headers: {
-          "Accept": "application/json",
+          'Content-Type': 'multipart/form-data'
         },
-        body: formData,
-      });
-
-      const resData = await response.json();
-
-      if (response.ok) {
-        setShowOtpModal(false);
-        setScreenState("LOGIN");
-        Toast.show({
-          type: 'success',
-          
-          text2: resData?.message || 'Registration Completed Successfully!',
-        });
-      } else {
-        Toast.show({
-          type: 'error',
-          text2: resData?.message || 'OTP verification failed',
-        });
       }
-    } catch (error) {
+    );
+
+    if (response.status === 200) {
+      setShowOtpModal(false);
+      setScreenState("LOGIN");
       Toast.show({
-        type: 'error',
-        
-        text2: 'Server connection failed.',
+        type: 'success',
+        text2: response.data?.message || 'Registration Completed Successfully!',
       });
-    } finally {
-      setIsCompleteLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Upload Error:", error?.response?.data || error);
+    Toast.show({
+      type: 'error',
+      text2: error?.response?.data?.message || 'Server connection failed.',
+    });
+  } finally {
+    setIsCompleteLoading(false);
+  }
+};
+
 
   if (screenState === "GET_STARTED") {
     return (
@@ -370,11 +338,11 @@ export default function AuthScreen({ navigation }) {
               rules={{ required: "Contact number is required" }}
               render={({ field: { onChange, value } }) => (
                 <View className="bg-[#111827] border border-slate-800 rounded-2xl flex-row items-center px-4 py-3.5 mb-1">
-                  <Phone size={20} color="#64748B" />
+                  <Mail size={20} color="#64748B" />
                   <TextInput
-                    placeholder="Enter phone number"
+                    placeholder="Enter Your Email"
                     placeholderTextColor="#475569"
-                    keyboardType="phone-pad"
+                    keyboardType="email-address"
                     className="flex-1 text-white ml-3 text-base"
                     value={value}
                     onChangeText={onChange}
