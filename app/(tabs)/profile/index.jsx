@@ -17,9 +17,10 @@ import * as ImagePicker from "expo-image-picker";
 import config from "../../../src/Utils/envConfig";
 import { useAuth } from "../../../src/AuthProvider/AuthProvider";
 import Toast from "react-native-toast-message";
+import { Redirect } from "expo-router";
 
 export default function ProfileScreen() {
-    const { token, logout } = useAuth();
+    const { token,isLoggedIn, logout } = useAuth();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -192,6 +193,10 @@ export default function ProfileScreen() {
             </View>
         );
     }
+
+     if (!isLoggedIn || !user) {
+        return <Redirect href="/auth" />;
+      }
 
     return (
         <View className="flex-1 bg-[#090D16]">
